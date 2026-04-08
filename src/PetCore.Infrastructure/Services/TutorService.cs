@@ -22,7 +22,12 @@ public class TutorService
             .Where(t => t.ClinicId == clinicId);
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(t => t.Name.Contains(search) || (t.Email != null && t.Email.Contains(search)));
+            query = query.Where(t =>
+                t.Name.Contains(search) ||
+                (t.Email != null && t.Email.Contains(search)) ||
+                (t.Cpf != null && t.Cpf.Contains(search)) ||
+                (t.Rg != null && t.Rg.Contains(search)) ||
+                (t.Phone != null && t.Phone.Contains(search)));
 
         if (!string.IsNullOrWhiteSpace(phone))
             query = query.Where(t => t.Phone != null && t.Phone.Contains(phone));
