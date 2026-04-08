@@ -1,0 +1,15 @@
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\bin\Debug\net10.0\PetCore.Infrastructure.deps.json
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\bin\Debug\net10.0\PetCore.Infrastructure.dll
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\bin\Debug\net10.0\PetCore.Infrastructure.pdb
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\bin\Debug\net10.0\PetCore.Domain.dll
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\bin\Debug\net10.0\PetCore.Domain.pdb
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.AssemblyInfo.cs
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore..2A4DA3DD.Up2Date
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.dll
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\refint\PetCore.Infrastructure.dll
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\PetCore.Infrastructure.pdb
+C:\Users\brunomoreno\source\repos\petcore\PetCore.API\src\PetCore.Infrastructure\obj\Debug\net10.0\ref\PetCore.Infrastructure.dll

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PetCore.API/PetCore.API.csproj" />
+    <Project Path="src/PetCore.Domain/PetCore.Domain.csproj" />
+    <Project Path="src/PetCore.Infrastructure/PetCore.Infrastructure.csproj" />
+  </Folder>
+</Solution>
