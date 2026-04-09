@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using PetCore.Domain.Entities;
@@ -8,10 +9,12 @@ namespace PetCore.Infrastructure.Data;
 public class AuditoriaInterceptor : SaveChangesInterceptor
 {
     private readonly ITenantProvider _tenant;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
-    public AuditoriaInterceptor(ITenantProvider tenant)
+    public AuditoriaInterceptor(ITenantProvider tenant, IHttpContextAccessor? httpContextAccessor = null)
     {
         _tenant = tenant;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -52,6 +55,8 @@ public class AuditoriaInterceptor : SaveChangesInterceptor
                 novoValor = JsonSerializer.Serialize(entry.Properties.ToDictionary(p => p.Metadata.Name, p => p.CurrentValue?.ToString()));
             }
 
+            var ip = _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
             db.Set<LogAuditoria>().Add(new LogAuditoria
             {
                 Id = Guid.NewGuid(),
@@ -62,6 +67,7 @@ public class AuditoriaInterceptor : SaveChangesInterceptor
                 EntidadeId = entityId,
                 ValorAntigo = valorAntigo,
                 NovoValor = novoValor,
+                EnderecoIp = ip,
                 CriadoEm = DateTime.UtcNow
             });
         }

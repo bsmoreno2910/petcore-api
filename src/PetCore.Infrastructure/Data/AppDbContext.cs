@@ -60,6 +60,9 @@ public class AppDbContext : DbContext
     // Módulo 10: Auditoria
     public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
 
+    // Módulo 11: Permissões
+    public DbSet<Permissao> Permissoes => Set<Permissao>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

@@ -29,6 +29,21 @@ public class DashboardController : ControllerBase
         });
     }
 
+    [HttpGet("receita-despesa-mensal")]
+    public async Task<IActionResult> ReceitaDespesaMensal()
+    {
+        var dados = await _servico.ObterReceitaDespesaMensalAsync(ClinicaId);
+        var meses = new[] { "", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez" };
+        return Ok(dados.Select(d => new { mes = $"{meses[d.Mes]}/{d.Ano % 100:D2}", receita = d.Receita, despesa = d.Despesa }));
+    }
+
+    [HttpGet("agendamentos-por-tipo")]
+    public async Task<IActionResult> AgendamentosPorTipo()
+    {
+        var dados = await _servico.ObterAgendamentosPorTipoAsync(ClinicaId);
+        return Ok(dados.Select(d => new { tipo = d.Tipo, quantidade = d.Quantidade }));
+    }
+
     [HttpGet("alertas-estoque")]
     public async Task<IActionResult> AlertasEstoque()
     {

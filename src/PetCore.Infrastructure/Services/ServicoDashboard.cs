@@ -32,4 +32,42 @@ public class ServicoDashboard
             transacoesMes.Where(t => t.Tipo == TipoTransacao.Receita).Sum(t => t.ValorPago ?? t.Valor),
             transacoesMes.Where(t => t.Tipo == TipoTransacao.Despesa).Sum(t => t.ValorPago ?? t.Valor));
     }
+
+    public async Task<List<(int Ano, int Mes, decimal Receita, decimal Despesa)>> ObterReceitaDespesaMensalAsync(Guid clinicaId)
+    {
+        var hoje = DateTime.UtcNow.Date;
+        var inicio = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-5);
+
+        var transacoes = await _db.TransacoesFinanceiras
+            .Where(t => t.ClinicaId == clinicaId && t.Status == StatusTransacao.Pago && t.DataPagamento >= inicio)
+            .Select(t => new { t.Tipo, t.DataPagamento, Valor = t.ValorPago ?? t.Valor })
+            .ToListAsync();
+
+        var resultado = new List<(int Ano, int Mes, decimal Receita, decimal Despesa)>();
+        for (var i = 0; i < 6; i++)
+        {
+            var mesRef = inicio.AddMonths(i);
+            var receita = transacoes
+                .Where(t => t.DataPagamento.HasValue && t.DataPagamento.Value.Year == mesRef.Year && t.DataPagamento.Value.Month == mesRef.Month && t.Tipo == TipoTransacao.Receita)
+                .Sum(t => t.Valor);
+            var despesa = transacoes
+                .Where(t => t.DataPagamento.HasValue && t.DataPagamento.Value.Year == mesRef.Year && t.DataPagamento.Value.Month == mesRef.Month && t.Tipo == TipoTransacao.Despesa)
+                .Sum(t => t.Valor);
+            resultado.Add((mesRef.Year, mesRef.Month, receita, despesa));
+        }
+        return resultado;
+    }
+
+    public async Task<List<(string Tipo, int Quantidade)>> ObterAgendamentosPorTipoAsync(Guid clinicaId)
+    {
+        var inicio = DateTime.UtcNow.Date.AddDays(-30);
+
+        var dados = await _db.Agendamentos
+            .Where(a => a.ClinicaId == clinicaId && a.DataHoraAgendada >= inicio)
+            .GroupBy(a => a.Tipo)
+            .Select(g => new { Tipo = g.Key.ToString(), Quantidade = g.Count() })
+            .ToListAsync();
+
+        return dados.Select(d => (d.Tipo, d.Quantidade)).ToList();
+    }
 }
