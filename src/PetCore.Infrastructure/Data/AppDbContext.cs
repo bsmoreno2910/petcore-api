@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PetCore.Domain.Entities;
+using PetCore.Infrastructure.Data.Conventions;
 
 namespace PetCore.Infrastructure.Data;
 
@@ -7,36 +8,57 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<Clinic> Clinics => Set<Clinic>();
-    public DbSet<ClinicUser> ClinicUsers => Set<ClinicUser>();
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Species> Species => Set<Species>();
-    public DbSet<Breed> Breeds => Set<Breed>();
-    public DbSet<Tutor> Tutors => Set<Tutor>();
-    public DbSet<Patient> Patients => Set<Patient>();
-    public DbSet<Appointment> Appointments => Set<Appointment>();
-    public DbSet<MedicalRecord> MedicalRecords => Set<MedicalRecord>();
-    public DbSet<Prescription> Prescriptions => Set<Prescription>();
-    public DbSet<Hospitalization> Hospitalizations => Set<Hospitalization>();
-    public DbSet<HospitalizationEvolution> HospitalizationEvolutions => Set<HospitalizationEvolution>();
-    public DbSet<ExamType> ExamTypes => Set<ExamType>();
-    public DbSet<ExamRequest> ExamRequests => Set<ExamRequest>();
-    public DbSet<ExamResult> ExamResults => Set<ExamResult>();
-    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
-    public DbSet<ProductUnit> ProductUnits => Set<ProductUnit>();
-    public DbSet<Product> Products => Set<Product>();
-    public DbSet<Movement> Movements => Set<Movement>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-    public DbSet<FinancialCategory> FinancialCategories => Set<FinancialCategory>();
-    public DbSet<FinancialTransaction> FinancialTransactions => Set<FinancialTransaction>();
-    public DbSet<TransactionInstallment> TransactionInstallments => Set<TransactionInstallment>();
-    public DbSet<CostCenter> CostCenters => Set<CostCenter>();
-    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    // Módulo 1: Autenticação & Multiclínica
+    public DbSet<Clinica> Clinicas => Set<Clinica>();
+    public DbSet<ClinicaUsuario> ClinicaUsuarios => Set<ClinicaUsuario>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
+    // Módulo 2: Cadastros Base
+    public DbSet<Especie> Especies => Set<Especie>();
+    public DbSet<Raca> Racas => Set<Raca>();
+    public DbSet<Tutor> Tutores => Set<Tutor>();
+    public DbSet<Paciente> Pacientes => Set<Paciente>();
+
+    // Módulo 3: Agenda
+    public DbSet<Agendamento> Agendamentos => Set<Agendamento>();
+
+    // Módulo 4: Prontuário & Atendimento
+    public DbSet<Prontuario> Prontuarios => Set<Prontuario>();
+    public DbSet<Prescricao> Prescricoes => Set<Prescricao>();
+    public DbSet<Internacao> Internacoes => Set<Internacao>();
+    public DbSet<Evolucao> Evolucoes => Set<Evolucao>();
+
+    // Módulo 5: Exames
+    public DbSet<TipoExame> TiposExame => Set<TipoExame>();
+    public DbSet<SolicitacaoExame> SolicitacoesExame => Set<SolicitacaoExame>();
+    public DbSet<ResultadoExame> ResultadosExame => Set<ResultadoExame>();
+
+    // Módulo 6: Almoxarifado
+    public DbSet<CategoriaProduto> CategoriasProduto => Set<CategoriaProduto>();
+    public DbSet<UnidadeProduto> UnidadesProduto => Set<UnidadeProduto>();
+    public DbSet<Produto> Produtos => Set<Produto>();
+    public DbSet<Movimentacao> Movimentacoes => Set<Movimentacao>();
+    public DbSet<Pedido> Pedidos => Set<Pedido>();
+    public DbSet<ItemPedido> ItensPedido => Set<ItemPedido>();
+
+    // Módulo 7: Financeiro
+    public DbSet<CategoriaFinanceira> CategoriasFinanceiras => Set<CategoriaFinanceira>();
+    public DbSet<TransacaoFinanceira> TransacoesFinanceiras => Set<TransacaoFinanceira>();
+    public DbSet<ParcelaTransacao> ParcelasTransacao => Set<ParcelaTransacao>();
+
+    // Módulo 8: Custos
+    public DbSet<CentroCusto> CentrosCusto => Set<CentroCusto>();
+
+    // Módulo 10: Auditoria
+    public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Aplicar camelCase em todas as tabelas e colunas
+        modelBuilder.ApplyNomenclaturasCamelCase();
+
         base.OnModelCreating(modelBuilder);
     }
 }

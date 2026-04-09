@@ -1,10 +1,7 @@
 using System.Text;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PetCore.API.Mappings;
 using PetCore.API.Middleware;
 using PetCore.Domain.Interfaces;
 using PetCore.Infrastructure.Data;
@@ -27,7 +24,7 @@ builder.Host.UseSerilog();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Authentication JWT
+// Autenticação JWT
 var jwtSecret = builder.Configuration["JwtSettings:Secret"]!;
 builder.Services.AddAuthentication(options =>
 {
@@ -50,32 +47,24 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-
 // Services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAuditService, AuditService>();
-builder.Services.AddScoped<ClinicService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<SpeciesService>();
-builder.Services.AddScoped<TutorService>();
-builder.Services.AddScoped<PatientService>();
-builder.Services.AddScoped<AppointmentService>();
-builder.Services.AddScoped<MedicalRecordService>();
-builder.Services.AddScoped<HospitalizationService>();
-builder.Services.AddScoped<ExamService>();
-builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<MovementService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<FinancialService>();
-builder.Services.AddScoped<CostCenterService>();
-builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<ExcelExportService>();
+builder.Services.AddScoped<IServicoAutenticacao, ServicoAutenticacao>();
+builder.Services.AddScoped<IServicoAuditoria, ServicoAuditoria>();
+builder.Services.AddScoped<ServicoClinica>();
+builder.Services.AddScoped<ServicoUsuario>();
+builder.Services.AddScoped<ServicoEspecie>();
+builder.Services.AddScoped<ServicoTutor>();
+builder.Services.AddScoped<ServicoPaciente>();
+builder.Services.AddScoped<ServicoAgendamento>();
+builder.Services.AddScoped<ServicoProntuario>();
+builder.Services.AddScoped<ServicoInternacao>();
+builder.Services.AddScoped<ServicoExame>();
+builder.Services.AddScoped<ServicoProduto>();
+builder.Services.AddScoped<ServicoMovimentacao>();
+builder.Services.AddScoped<ServicoPedido>();
+builder.Services.AddScoped<ServicoFinanceiro>();
+builder.Services.AddScoped<ServicoCentroCusto>();
+builder.Services.AddScoped<ServicoDashboard>();
 
 // Controllers
 builder.Services.AddControllers()
@@ -87,7 +76,7 @@ builder.Services.AddControllers()
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("PermitirFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
@@ -96,14 +85,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Swagger / OpenAPI
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Middleware pipeline
-app.UseExceptionHandling();
+// Pipeline de middlewares
+app.UseTratamentoExcecoes();
 
 if (app.Environment.IsDevelopment())
 {
@@ -115,19 +104,19 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowFrontend");
+app.UseCors("PermitirFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseClinicTenant();
+app.UseClinicaTenant();
 
 app.MapControllers();
 
-// Apply migrations and seed data
+// Aplicar migrations e seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-    await DataSeeder.SeedAsync(db);
+    await SemeadorDados.SemearAsync(db);
 }
 
 await app.RunAsync();
