@@ -6,7 +6,12 @@ namespace PetCore.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    private readonly ITenantProvider? _tenant;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, ITenantProvider? tenant = null) : base(options)
+    {
+        _tenant = tenant;
+    }
 
     // Módulo 1: Autenticação & Multiclínica
     public DbSet<Clinica> Clinicas => Set<Clinica>();
@@ -49,12 +54,36 @@ public class AppDbContext : DbContext
     // Módulo 8: Custos
     public DbSet<CentroCusto> CentrosCusto => Set<CentroCusto>();
 
+    // Refresh Tokens
+    public DbSet<TokenAtualizacao> TokensAtualizacao => Set<TokenAtualizacao>();
+
     // Módulo 10: Auditoria
     public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Global Query Filters para Tenant Isolation
+        // SuperAdmin ignora os filtros; durante migrations _tenant é null
+        var clinicaId = _tenant?.ClinicaId ?? Guid.Empty;
+        var ehSuperAdmin = _tenant?.EhSuperAdmin ?? true;
+
+        if (!ehSuperAdmin && clinicaId != Guid.Empty)
+        {
+            modelBuilder.Entity<Tutor>().HasQueryFilter(t => t.ClinicaId == clinicaId);
+            modelBuilder.Entity<Paciente>().HasQueryFilter(p => p.ClinicaId == clinicaId);
+            modelBuilder.Entity<Agendamento>().HasQueryFilter(a => a.ClinicaId == clinicaId);
+            modelBuilder.Entity<Prontuario>().HasQueryFilter(m => m.ClinicaId == clinicaId);
+            modelBuilder.Entity<Internacao>().HasQueryFilter(h => h.ClinicaId == clinicaId);
+            modelBuilder.Entity<SolicitacaoExame>().HasQueryFilter(e => e.ClinicaId == clinicaId);
+            modelBuilder.Entity<Produto>().HasQueryFilter(p => p.ClinicaId == clinicaId);
+            modelBuilder.Entity<Movimentacao>().HasQueryFilter(m => m.ClinicaId == clinicaId);
+            modelBuilder.Entity<Pedido>().HasQueryFilter(o => o.ClinicaId == clinicaId);
+            modelBuilder.Entity<TransacaoFinanceira>().HasQueryFilter(t => t.ClinicaId == clinicaId);
+            modelBuilder.Entity<CentroCusto>().HasQueryFilter(c => c.ClinicaId == clinicaId);
+            modelBuilder.Entity<LogAuditoria>().HasQueryFilter(l => l.ClinicaId == clinicaId);
+        }
 
         // Aplicar camelCase em todas as tabelas e colunas
         modelBuilder.ApplyNomenclaturasCamelCase();

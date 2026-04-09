@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PetCore.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class MigracaoInicial : Migration
+    public partial class MigracaoCompleta : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -352,6 +352,29 @@ namespace PetCore.Infrastructure.Data.Migrations
                         principalTable: "usuarios",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tokensAtualizacao",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    usuarioId = table.Column<Guid>(type: "uuid", nullable: false),
+                    token = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    expiraEm = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    criadoEm = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    revogadoEm = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    substituidoPor = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pK_tokensAtualizacao", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tokensAtualizacao_usuarios_usuarioId",
+                        column: x => x.usuarioId,
+                        principalTable: "usuarios",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1097,6 +1120,17 @@ namespace PetCore.Infrastructure.Data.Migrations
                 column: "tipoExameId");
 
             migrationBuilder.CreateIndex(
+                name: "iX_tokensAtualizacao_token",
+                table: "tokensAtualizacao",
+                column: "token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "iX_tokensAtualizacao_usuarioId",
+                table: "tokensAtualizacao",
+                column: "usuarioId");
+
+            migrationBuilder.CreateIndex(
                 name: "iX_transacoesFinanceiras_agendamentoId",
                 table: "transacoesFinanceiras",
                 column: "agendamentoId");
@@ -1188,6 +1222,9 @@ namespace PetCore.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "resultadosExame");
+
+            migrationBuilder.DropTable(
+                name: "tokensAtualizacao");
 
             migrationBuilder.DropTable(
                 name: "pedidos");

@@ -60,3 +60,18 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.HasIndex(u => u.Email).IsUnique();
     }
 }
+
+public class TokenAtualizacaoConfiguration : IEntityTypeConfiguration<TokenAtualizacao>
+{
+    public void Configure(EntityTypeBuilder<TokenAtualizacao> builder)
+    {
+        builder.HasKey(t => t.Id);
+        builder.Property(t => t.Token).IsRequired().HasMaxLength(200);
+        builder.Property(t => t.SubstituidoPor).HasMaxLength(200);
+
+        builder.HasOne(t => t.Usuario).WithMany()
+            .HasForeignKey(t => t.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(t => t.Token).IsUnique();
+    }
+}

@@ -20,9 +20,19 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Tenant Provider + HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
+builder.Services.AddScoped<AuditoriaInterceptor>();
+
+// DbContext com interceptor de auditoria
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    var tenant = sp.GetService<ITenantProvider>();
+    if (tenant?.UsuarioId != null)
+        options.AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>());
+});
 
 // Autenticação JWT
 var jwtSecret = builder.Configuration["JwtSettings:Secret"]!;
@@ -73,12 +83,13 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
-// CORS
+// CORS configurável via variável de ambiente
+var corsOrigins = builder.Configuration["CORS_ORIGINS"] ?? "http://localhost:3000";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

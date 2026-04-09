@@ -1429,6 +1429,53 @@ namespace PetCore.Infrastructure.Data.Migrations
                     b.ToTable("tiposExame");
                 });
 
+            modelBuilder.Entity("PetCore.Domain.Entities.TokenAtualizacao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criadoEm");
+
+                    b.Property<DateTime>("ExpiraEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiraEm");
+
+                    b.Property<DateTime?>("RevogadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revogadoEm");
+
+                    b.Property<string>("SubstituidoPor")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("substituidoPor");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("token");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuarioId");
+
+                    b.HasKey("Id")
+                        .HasName("pK_tokensAtualizacao");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("iX_tokensAtualizacao_token");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("iX_tokensAtualizacao_usuarioId");
+
+                    b.ToTable("tokensAtualizacao");
+                });
+
             modelBuilder.Entity("PetCore.Domain.Entities.TransacaoFinanceira", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2118,6 +2165,17 @@ namespace PetCore.Infrastructure.Data.Migrations
                     b.Navigation("SolicitadoPor");
 
                     b.Navigation("TipoExame");
+                });
+
+            modelBuilder.Entity("PetCore.Domain.Entities.TokenAtualizacao", b =>
+                {
+                    b.HasOne("PetCore.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("PetCore.Domain.Entities.TransacaoFinanceira", b =>

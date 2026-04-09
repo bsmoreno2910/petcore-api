@@ -41,7 +41,7 @@ public class ServicoAutenticacao : IServicoAutenticacao
         string? perfilAtivo = clinicas.Count == 1 ? clinicas[0].Perfil : null;
 
         var tokenAcesso = GerarTokenAcesso(usuario, clinicaAtivaId, perfilAtivo);
-        var tokenAtualizacao = GerarTokenAtualizacao();
+        var tokenAtualizacao = await CriarTokenAtualizacaoAsync(usuario.Id);
 
         return new ResultadoAutenticacao
         {
@@ -55,7 +55,26 @@ public class ServicoAutenticacao : IServicoAutenticacao
 
     public async Task<ResultadoAutenticacao> RefreshTokenAsync(string tokenAtualizacao)
     {
-        return new ResultadoAutenticacao { Sucesso = false, Erro = "Token de atualização inválido." };
+        var token = await _db.Set<TokenAtualizacao>()
+            .Include(t => t.Usuario).ThenInclude(u => u.ClinicaUsuarios).ThenInclude(cu => cu.Clinica)
+            .FirstOrDefaultAsync(t => t.Token == tokenAtualizacao);
+
+        if (token == null || !token.Ativo)
+            return new ResultadoAutenticacao { Sucesso = false, Erro = "Token de atualização inválido ou expirado." };
+
+        // Revogar token usado e criar novo (rotação)
+        token.RevogadoEm = DateTime.UtcNow;
+        var novoRefresh = await CriarTokenAtualizacaoAsync(token.UsuarioId);
+        token.SubstituidoPor = novoRefresh;
+
+        // Gerar novo access token
+        var usuario = token.Usuario;
+        var clinicaAtiva = usuario.ClinicaUsuarios.FirstOrDefault(cu => cu.Ativo);
+        var novoAccess = GerarTokenAcesso(usuario, clinicaAtiva?.ClinicaId, clinicaAtiva?.Perfil.ToString());
+
+        await _db.SaveChangesAsync();
+
+        return new ResultadoAutenticacao { Sucesso = true, TokenAcesso = novoAccess, TokenAtualizacao = novoRefresh };
     }
 
     public async Task AlterarSenhaAsync(Guid usuarioId, string senhaAtual, string novaSenha)
@@ -86,7 +105,7 @@ public class ServicoAutenticacao : IServicoAutenticacao
             return new ResultadoAutenticacao { Sucesso = false, Erro = "Usuário não possui acesso a esta clínica." };
 
         var tokenAcesso = GerarTokenAcesso(usuario, clinicaId, clinicaUsuario.Perfil.ToString());
-        var tokenAtualizacao = GerarTokenAtualizacao();
+        var tokenAtualizacao = await CriarTokenAtualizacaoAsync(usuario.Id);
 
         return new ResultadoAutenticacao { Sucesso = true, TokenAcesso = tokenAcesso, TokenAtualizacao = tokenAtualizacao };
     }
@@ -122,11 +141,27 @@ public class ServicoAutenticacao : IServicoAutenticacao
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private static string GerarTokenAtualizacao()
+    private async Task<string> CriarTokenAtualizacaoAsync(Guid usuarioId)
     {
         var bytes = new byte[64];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(bytes);
-        return Convert.ToBase64String(bytes);
+        var tokenStr = Convert.ToBase64String(bytes);
+
+        var diasExpiracao = int.Parse(_config["JwtSettings:RefreshTokenExpirationDays"] ?? "7");
+
+        var token = new TokenAtualizacao
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = usuarioId,
+            Token = tokenStr,
+            ExpiraEm = DateTime.UtcNow.AddDays(diasExpiracao),
+            CriadoEm = DateTime.UtcNow
+        };
+
+        _db.Set<TokenAtualizacao>().Add(token);
+        await _db.SaveChangesAsync();
+
+        return tokenStr;
     }
 }
